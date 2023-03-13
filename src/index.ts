@@ -39,7 +39,7 @@ function botMessageHandler( msg: TelegramBot.Message ) {
 
 }
 
-export const setup = ( token: string, secret: string ) => {
+export function setup( token: string, secret: string ) {
 
   const idOwnerChat = localStorage.getItem('id')
   
