@@ -42,7 +42,7 @@ function botMessageHandler( msg: TelegramBot.Message ) {
 export function setup( token: string, secret: string ) {
 
   const idOwnerChat = localStorage.getItem('id')
-  
+
   if ( idOwnerChat ) {
     global.idOwnerChat = idOwnerChat
   }
@@ -63,9 +63,10 @@ export function setup( token: string, secret: string ) {
   return global.bot;
 }
 
-
-export function getOwnerChatId() {
-  return new Promise( ( resolve, reject ) => )
+export function getOwnerChatId( callback:( idChat: string ) => void ) {
+  if ( global.idOwnerChat ) {
+    callback.apply( global.bot, [ global.idOwnerChat ] );
+  }
 }
 
 export function sendOwnerMessage(
