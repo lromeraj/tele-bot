@@ -63,13 +63,18 @@ export function setup( token: string, secret: string ) {
   return global.bot;
 }
 
-export function sendOwnerMessage( 
+
+export function getOwnerChatId() {
+  return new Promise( ( resolve, reject ) => )
+}
+
+export function sendOwnerMessage(
   msg: string, options?: TelegramBot.SendMessageOptions 
 ) {
   if ( global.idOwnerChat ) {
     return global.bot.sendMessage( global.idOwnerChat, msg, options );
   }
-  return Promise.reject( new Error('Owner not setted up') )
+  return Promise.resolve();
 }
 
 function setOwnerChatId( idChat: number ) {
