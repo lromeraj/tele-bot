@@ -1,7 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import { LocalStorage } from "node-localstorage";
 
-const localStorage = new LocalStorage( './tele-bot/' );
+const localStorage = new LocalStorage( './scratch/' );
 
 interface GlobalContext {
   secret?: string,
@@ -66,6 +66,16 @@ export function setup( token: string, secret: string ) {
 export function getOwnerChatId( callback:( idChat: string ) => void ) {
   if ( global.idOwnerChat ) {
     callback.apply( global.bot, [ global.idOwnerChat ] );
+  }
+}
+
+export const validateEvent = ( 
+  callback: ( message: TelegramBot.Message, metadata: TelegramBot.Metadata ) => void 
+) => {
+  return ( message: TelegramBot.Message, metadata: TelegramBot.Metadata ) => {
+    if ( message.chat.id.toString() === global.idOwnerChat! ) {
+      callback( message, metadata );
+    }
   }
 }
 
