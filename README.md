@@ -1,6 +1,4 @@
-# tele-bot
-
-
+# Generic Telegram bot
 
 ## Getting started
 

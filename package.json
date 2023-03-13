@@ -5,7 +5,8 @@
   "main": "build/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "rm -rf build/ && tsc"
+    "build": "rm -rf build/ && tsc",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",

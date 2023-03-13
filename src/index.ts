@@ -1,54 +1,78 @@
-import TelegramBot  from "node-telegram-bot-api";
+import TelegramBot from "node-telegram-bot-api";
 import { LocalStorage } from "node-localstorage";
 
 const localStorage = new LocalStorage( './tele-bot/' );
 
-let idOwnerChat = localStorage.getItem( 'id' );
-let bot:  TelegramBot = new TelegramBot( '', { polling: false, webHook: false });
+interface GlobalContext {
+  secret?: string,
+  idOwnerChat?: string,
+  bot: TelegramBot,
+}
+
+const global: GlobalContext = {
+  bot: new TelegramBot( '', { polling: false, webHook: false }),
+};
+
+function validSecret( secret: string ) {
+  return global.secret && ( global.secret === secret );
+}
 
 function botMessageHandler( msg: TelegramBot.Message ) {
   
   const splittedMessage = msg.text?.split(/\s+/) || [ 'help' ];
   const cmd = splittedMessage[0];
   const argv = splittedMessage.slice(1);
-  const argc = argv.length
+  const argc = argv.length;
 
-  if ( !idOwnerChat && cmd === '/owner' ) {
+  if ( !global.idOwnerChat && cmd === '/owner' ) {
 
-    if ( argc === 1 && argv[ 0 ] === process.env.BOT_SECRET! ) {
-      setOwnerId( msg.chat.id );
-      bot.sendMessage( msg.chat.id, `Owner OK @ ${ idOwnerChat }` );
+    const idOwnerChat = msg.chat.id;
+
+    if ( argc === 1 && validSecret( argv[ 0 ] ) ) {
+      setOwnerChatId( idOwnerChat );
+      global.bot.sendMessage( idOwnerChat, `Owner OK @ ${ idOwnerChat }` );
     } else {
-      bot.sendMessage( msg.chat.id, `Owner ERR` );
+      global.bot.sendMessage( idOwnerChat, `Owner ERR` );
     }
-
+    
   }
+
 }
 
-export const setup = ( token: string ) => {
+export const setup = ( token: string, secret: string ) => {
 
-  bot.removeAllListeners();
+  const idOwnerChat = localStorage.getItem('id')
+  
+  if ( idOwnerChat ) {
+    global.idOwnerChat = idOwnerChat
+  }
 
-  bot = new TelegramBot( token, { 
+  global.secret = secret;
+  global.bot.removeAllListeners();
+
+  global.bot = new TelegramBot( token, { 
     polling: true,
   });
 
-  bot.on( 'message', botMessageHandler );
+  global.bot.setMyCommands([
+    { command: 'owner', description: 'Allows you to be assigned as a proprietary of the bot' },
+  ]);
+  
+  global.bot.on( 'message', botMessageHandler );
 
-  return bot;
+  return global.bot;
 }
 
 export function sendOwnerMessage( 
   msg: string, options?: TelegramBot.SendMessageOptions 
 ) {
-  if ( idOwnerChat ) {
-    return bot.sendMessage( idOwnerChat, msg, options );
+  if ( global.idOwnerChat ) {
+    return global.bot.sendMessage( global.idOwnerChat, msg, options );
   }
   return Promise.reject( new Error('Owner not setted up') )
 }
 
-function setOwnerId( idChat: number ) {
-  idOwnerChat = idChat.toString();
-  localStorage.setItem( 'id', idOwnerChat );
+function setOwnerChatId( idChat: number ) {
+  global.idOwnerChat = idChat.toString();
+  localStorage.setItem( 'id', global.idOwnerChat );
 }
-
