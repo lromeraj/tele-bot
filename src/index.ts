@@ -75,7 +75,7 @@ export function sendOwnerMessage(
   if ( global.idOwnerChat ) {
     return global.bot.sendMessage( global.idOwnerChat, msg, options );
   }
-  return Promise.resolve();
+  return Promise.reject( new Error( 'Owner not configured' ) );
 }
 
 function setOwnerChatId( idChat: number ) {
