@@ -49,7 +49,7 @@ function botMessageHandler( msg: TelegramBot.Message ) {
     global.bot.deleteMessage( idOwnerChat, msg.message_id );
   
   }
-  
+
 }
 
 function applyCurrentCommands() {
@@ -74,33 +74,32 @@ export function setCommands( commands:TelegramBot.BotCommand[] ) {
 
 export function setup( options: TeleBotOptions ) {
 
-  return new Promise( (resolve, reject) => {
-    
-    if ( options.storageDir ) {
-      localStorage = new LocalStorage( options.storageDir );
-    }
+  if ( options.storageDir ) {
+    localStorage = new LocalStorage( options.storageDir );
+  }
 
-    const idOwnerChat = localStorage.getItem('id')
+  const idOwnerChat = localStorage.getItem('id')
 
-    if ( idOwnerChat ) {
-      global.idOwnerChat = idOwnerChat
-    }
+  if ( idOwnerChat ) {
+    global.idOwnerChat = idOwnerChat
+  }
+
+  global.secret = options.secret;
+  global.bot.removeAllListeners();
+
+  global.bot = new TelegramBot( options.token, { 
+    polling: true,
+  });
   
-    global.secret = options.secret;
-    global.bot.removeAllListeners();
+  global.bot.on( 'message', botMessageHandler );
   
-    global.bot = new TelegramBot( options.token, { 
-      polling: true,
-    });
-    
-    global.bot.on( 'message', botMessageHandler );
-    
-    setCommands([
-      { command: 'owner', description: 'Set bot owner using self assignment' },
-    ]).then( () => resolve( global.bot ) ).catch( reject );
+  setCommands([
+    { command: 'owner', description: 'Set bot owner using self assignment' },
+  ]).catch( err => {
+    console.error( err );
+  });
 
-  })
-
+  return global.bot;
 }
 
 export function getOwnerChatId( callback:( idChat: string ) => void ) {
