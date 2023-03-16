@@ -12,6 +12,7 @@ export interface TeleBotOptions {
 
 interface GlobalContext {
   secret?: string,
+  waitingSecret: boolean,
   idOwnerChat?: string,
   bot: TelegramBot,
   commands: { [key: string]: TelegramBot.BotCommand }
@@ -21,6 +22,7 @@ let localStorage = new LocalStorage( DEFAULT_STORAGE_DIR );
 
 const global: GlobalContext = {
   commands: {},
+  waitingSecret: false,
   bot: new TelegramBot( '', { polling: false, webHook: false }),
 };
 
@@ -30,24 +32,30 @@ function validSecret( secret: string ) {
 
 function botMessageHandler( msg: TelegramBot.Message ) {
   
-  const splittedMessage = msg.text?.split(/\s+/) || [ 'help' ];
-  const cmd = splittedMessage[0];
-  const argv = splittedMessage.slice(1);
-  const argc = argv.length;
+  if ( global.waitingSecret ) {
 
-  if ( !global.idOwnerChat && cmd === '/owner' ) {
-    
     const idOwnerChat = msg.chat.id;
-    
-    if ( argc === 1 && validSecret( argv[ 0 ] ) ) {
+
+    if ( validSecret( msg.text || '' ) ) {
       setOwnerChatId( idOwnerChat );
-      global.bot.sendMessage( idOwnerChat, `Owner OK @ ${ idOwnerChat }` );
+      sendOwnerMessage( `Owner OK @ ${ idOwnerChat }` );
     } else {
       global.bot.sendMessage( idOwnerChat, `Owner ERR` );
     }
 
+    global.waitingSecret = false;
+
+    // delete secret from chat history
     global.bot.deleteMessage( idOwnerChat, msg.message_id );
-  
+  }
+
+  if ( msg.text === '/owner' ) {
+    if ( global.idOwnerChat ){
+      sendOwnerMessage( `This bot already has an owner` )
+    } else {
+      global.waitingSecret = true;
+      global.bot.sendMessage( msg.chat.id, `Please send me your secret` );
+    }
   }
 
 }
