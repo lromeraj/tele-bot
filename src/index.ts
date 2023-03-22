@@ -1,8 +1,11 @@
-import path from "path";
 import TelegramBot from "node-telegram-bot-api";
 import { LocalStorage } from "node-localstorage";
 
 const DEFAULT_STORAGE_DIR = './tele-bot-storage';
+
+export {
+  TelegramBot
+}
 
 export interface TeleBotOptions {
   token: string;
