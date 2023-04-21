@@ -14,7 +14,7 @@ This is a generic bot for *Telegram* which allows you to be the owner so you can
 > **NOTE**: send `/help` command to _BotFather_ in order to see all available options to customize more your bot.
 
 # How to communicate privately with your bot
-When your new bot has been created and it's ready to receive messages, in order to communicate privately with it you have to tell the bot that only you will be able to communicate with him, to achieve that, simply send to your bot the following command:
+When your new bot has been created and it's ready to receive messages, in order to communicate privately with it you have to tell to your bot that only you will be able to communicate with him, to achieve that, simply send to your bot (not _BotFather_) the following command:
 
 ``` txt
 /owner
