@@ -6,7 +6,7 @@ This is a generic bot for *Telegram* which allows you to be the owner so you can
 
 1. First you need a Telegram account, if you don't have it, please create a new one.
 2. Start a chat with the [BotFather](https://t.me/botfather).
-3. Send the the command `/newbot` to create a new one. The BotFather will guide you during the whole process.
+3. Send the command `/newbot` to create a new one. The _BotFather_ will guide you during the whole process.
     > **NOTE**: you will have to give two names, the first one is used as a displayable name for the bot, and the second one is to set a unique name identifier four your bot, I recommend you to use the following template for the unique name: `<YOUR_USER_NAME>_<BOT_NAME>_bot`.
 4. Copy the token from your bot and paste it in your own instance's configuration.
 5. Run your instance and follow the [following instructions](#how-to-communicate-privately-with-your-bot) to set you as the owner of the bot.
