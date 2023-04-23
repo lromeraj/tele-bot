@@ -23,6 +23,6 @@ When your new bot has been created and it's ready to receive messages, in order 
 The bot will request you a secret which you have previously configured in your instance. The bot will remove the secret from the chat history and will send a final message like:
 
 ``` txt
-OK @ <CHAT_ID>
+Owner OK @ <CHAT_ID>
 ```
 This identifier is stored in the local storage of your instance and used to identify the owner's chat.
