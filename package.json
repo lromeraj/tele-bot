@@ -1,6 +1,6 @@
 {
   "name": "tele-bot",
-  "version": "0.0.1",
+  "version": "0.3.2",
   "description": "A generic Telegram bot",
   "main": "build/index.js",
   "scripts": {
