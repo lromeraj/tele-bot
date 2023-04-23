@@ -2,7 +2,7 @@
 
 This is a generic bot for *Telegram* which allows you to be the owner so you can communicate privately with the bot. If you are not familiar with Telegram bots, you can simply follow the below instructions.
 
-# How to create Telegram a bot
+# How to create a Telegram bot
 
 1. First you need a Telegram account, if you don't have it, please create a new one.
 2. Start a chat with the [BotFather](https://t.me/botfather).
