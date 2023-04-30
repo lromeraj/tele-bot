@@ -87,7 +87,10 @@ export function setCommands( bot: TelegramBot, commands:TelegramBot.BotCommand[]
   return applyCurrentCommands( bot );
 }
 
-export function setup( options: TeleBotOptions ) {
+export function setup( 
+  options: TeleBotOptions, 
+  _errHandler?: ( err: Error ) => void 
+) {
 
   if ( options.storageDir ) {
     global.storage = new LocalStorage( options.storageDir );
@@ -109,15 +112,21 @@ export function setup( options: TeleBotOptions ) {
     
     global.bot.on( 'message', 
       botMessageHandler.bind( null, global.bot ) );
+    
+    const defaultErrHandler = 
+      ( err: Error ) => console.error( err )  
+
+    const errHandler: ( err: Error ) => void = 
+      _errHandler || defaultErrHandler
+
+    global.bot.on( 'error', errHandler );
 
     setCommands( global.bot, [
       { 
         command: 'owner', 
         description: 'Set bot owner using self assignment' 
       },
-    ]).catch( err => {
-      console.error( err );
-    });
+    ]).catch( errHandler );
 
   }
 
