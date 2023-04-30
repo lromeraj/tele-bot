@@ -33,10 +33,6 @@ function validSecret( secret: string ) {
   return global.secret && ( global.secret === secret );
 }
 
-function botErr() {
-
-}
-
 function botMessageHandler( bot: TelegramBot, msg: TelegramBot.Message ) {
   
   if ( global.waitingSecret ) {
