@@ -63,24 +63,34 @@ function botMessageHandler( bot: TelegramBot, msg: TelegramBot.Message ) {
 
 }
 
-function applyCurrentCommands( bot: TelegramBot ) {
-  return bot.setMyCommands(
-    Object.keys( global.commands )
-      .map( cmdKey => global.commands[ cmdKey ] ) );
+function applyCurrentCommands() {
+  if ( global.bot ) {
+    return global.bot.setMyCommands(
+      Object.keys( global.commands )
+        .map( cmdKey => global.commands[ cmdKey ] ) );
+  } else {
+    return Promise.reject( 'Bot is not defined' )
+  }
 }
 
-export function unsetCommands( bot: TelegramBot, commandKeys: string[] ) {
+export function getBot( callback: (bot: TelegramBot) => void ) {
+  if ( global.bot ) {
+    callback( global.bot );
+  }
+}
+
+export function unsetCommands( commandKeys: string[] ) {
   commandKeys.forEach( key => {
     delete global.commands[ key ];
   })
-  return applyCurrentCommands( bot );
+  return applyCurrentCommands();
 }
 
-export function setCommands( bot: TelegramBot, commands:TelegramBot.BotCommand[] ) {
+export function setCommands( commands:TelegramBot.BotCommand[] ) {
   commands.forEach( cmd => {
     global.commands[ cmd.command ] = cmd;
   })
-  return applyCurrentCommands( bot );
+  return applyCurrentCommands();
 }
 
 export function setup( 
@@ -117,7 +127,7 @@ export function setup(
 
     global.bot.on( 'error', errHandler );
 
-    setCommands( global.bot, [
+    setCommands([
       { 
         command: 'owner', 
         description: 'Set bot owner using self assignment' 
