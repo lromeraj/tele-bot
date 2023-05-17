@@ -1,6 +1,10 @@
 # Generic Telegram bot
 
-This is a generic bot for *Telegram* which allows you to be the owner so you can communicate privately with the bot. If you are not familiar with Telegram bots, you can simply follow the below instructions.
+This is a generic bot for *Telegram* that allows you to become the owner, enabling you to communicate privately with the bot. If you are not familiar with Telegram bots, simply follow the instructions showed below.
+
+> **NOTE**: this repository has been created for simple test cases or proof of concepts and **should not be used in any production environment**.
+
+If you need additional functionality, you can request it by creating an issue
 
 # How to create a Telegram bot
 
