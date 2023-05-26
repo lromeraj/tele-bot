@@ -126,6 +126,8 @@ export function setup(
       _errHandler || defaultErrHandler
 
     global.bot.on( 'error', errHandler );
+    global.bot.on( 'polling_error', errHandler );
+    global.bot.on( 'webhook_error', errHandler );
 
     setCommands([
       { 
