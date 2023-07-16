@@ -1,7 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import { LocalStorage } from "node-localstorage";
-
-const DEFAULT_STORAGE_DIR = './tele-bot-storage';
+import { DEFAULT_STORAGE_DIR } from "./constants";
 
 export {
   TelegramBot
@@ -11,22 +10,22 @@ export interface TeleBotOptions {
   token?: string;
   secret?: string;
   storageDir?: string;
-  options?: TelegramBot.ConstructorOptions;
+  opts?: TelegramBot.ConstructorOptions;
 }
 
 interface GlobalContext {
-  secret?: string,
-  waitingSecret: boolean,
-  idOwnerChat?: string,
-  bot?: TelegramBot,
-  commands: { [key: string]: TelegramBot.BotCommand },
-  storage: LocalStorage,
+  secret?: string;
+  waitingSecret: boolean;
+  idOwnerChat?: string;
+  bot?: TelegramBot;
+  storage: LocalStorage; 
+  commands: { [key: string]: TelegramBot.BotCommand };
 }
 
 const global: GlobalContext = {
   commands: {},
   waitingSecret: false,
-  storage: new LocalStorage( DEFAULT_STORAGE_DIR ),
+  storage: new LocalStorage( DEFAULT_STORAGE_DIR )
 }
 
 function validSecret( secret: string ) {
