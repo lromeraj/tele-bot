@@ -73,7 +73,7 @@ function applyCurrentCommands() {
 }
 
 export function getBot() {
-  return new Promise( ( resolve, reject ) => {
+  return new Promise<TelegramBot>( ( resolve, reject ) => {
     if ( global.bot ) {
       resolve( global.bot );
     } else {
@@ -144,7 +144,7 @@ export function setup(
 }
 
 export function getOwnerChatId() {
-  return new Promise( ( resolve, reject ) => {
+  return new Promise<[ TelegramBot, string ]>( ( resolve, reject ) => {
     if ( global.bot && global.idOwnerChat ) {
       resolve([ global.bot, global.idOwnerChat ]);
     } else {
