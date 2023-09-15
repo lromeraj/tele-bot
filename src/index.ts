@@ -72,10 +72,14 @@ function applyCurrentCommands() {
   }
 }
 
-export function getBot( callback: (bot: TelegramBot) => void ) {
-  if ( global.bot ) {
-    callback( global.bot );
-  }
+export function getBot() {
+  return new Promise( ( resolve, reject ) => {
+    if ( global.bot ) {
+      resolve( global.bot );
+    } else {
+      reject( new Error( 'Bot is not ready' ) )
+    }
+  })
 }
 
 export function unsetCommands( commandKeys: string[] ) {
@@ -139,12 +143,14 @@ export function setup(
 
 }
 
-export function getOwnerChatId( 
-  callback:( bot: TelegramBot, idChat: string ) => void 
-) {
-  if ( global.bot && global.idOwnerChat ) {
-    callback.apply( global.bot, [ global.bot, global.idOwnerChat ] );
-  }
+export function getOwnerChatId() {
+  return new Promise( ( resolve, reject ) => {
+    if ( global.bot && global.idOwnerChat ) {
+      resolve([ global.bot, global.idOwnerChat ]);
+    } else {
+      reject( new Error( 'Bot does not have an owner' ) );
+    }
+  })
 }
 
 export const validateEvent = ( 
