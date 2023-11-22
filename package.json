@@ -7,10 +7,6 @@
     "build": "rimraf build/ && tsc --project tsconfig.json",
 		"dist": "rimraf dist/ && tsc --project tsconfig.dist.json"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://glab.lromeraj.net/npm/tele-bot.git"
-  },
   "keywords": [
     "telegram"
   ],
