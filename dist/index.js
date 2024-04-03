@@ -30,9 +30,12 @@ ownerScene.on((0, filters_1.message)('text'), (ctx) => __awaiter(void 0, void 0,
     yield ctx.deleteMessage();
     if (validSecret(ctx.text)) {
         setOwnerChatId(ctx.message.chat.id);
+        yield ctx.reply(`Owner chat saved @ \`${ctx.message.chat.id}\``, {
+            parse_mode: 'Markdown'
+        });
     }
     else {
-        ctx.reply('Invalid secret, operation cancelled');
+        yield ctx.reply('Given secret is not valid, please try again');
     }
     yield ctx.scene.leave();
 }));
@@ -42,29 +45,36 @@ const authStage = new telegraf_1.Scenes.Stage([
     ttl: 1 * 30,
 });
 function middleware(secret, storageDir) {
-    return __awaiter(this, void 0, void 0, function* () {
-        global.secret = secret;
-        if (storageDir) {
-            global.storage = new node_localstorage_1.LocalStorage(storageDir);
-        }
-        const idOwnerChat = global.storage.getItem('id');
-        if (idOwnerChat) {
-            global.idOwnerChat = idOwnerChat;
-        }
-        return [
-            (ctx, next) => __awaiter(this, void 0, void 0, function* () {
-                if (idOwnerChat === undefined) {
-                    return ctx.scene.enter('owner');
-                }
-                else {
-                    if (ctx.message && ctx.message.chat.id === Number(idOwnerChat)) {
+    global.secret = secret;
+    if (storageDir) {
+        global.storage = new node_localstorage_1.LocalStorage(storageDir);
+    }
+    const idOwnerChat = global.storage.getItem('id');
+    if (idOwnerChat) {
+        global.idOwnerChat = Number(idOwnerChat);
+    }
+    return [
+        authStage.middleware(),
+        (ctx, next) => __awaiter(this, void 0, void 0, function* () {
+            if (global.idOwnerChat === undefined) {
+                return ctx.scene.enter('owner');
+            }
+            else {
+                if (ctx.message) {
+                    if (ctx.message.chat.id === global.idOwnerChat) {
                         return next();
                     }
+                    else {
+                        ctx.sendMessage(`You are not allowed to use this bot`);
+                    }
                 }
-            }),
-            authStage.middleware()
-        ];
-    });
+                else {
+                    // This update implies a previous authentication
+                    return next();
+                }
+            }
+        }),
+    ];
 }
 exports.middleware = middleware;
 function getOwnerChatId() {
@@ -79,6 +89,6 @@ function getOwnerChatId() {
 }
 exports.getOwnerChatId = getOwnerChatId;
 function setOwnerChatId(idChat) {
-    global.idOwnerChat = idChat.toString();
-    global.storage.setItem('id', global.idOwnerChat);
+    global.idOwnerChat = idChat;
+    global.storage.setItem('id', idChat.toString());
 }
