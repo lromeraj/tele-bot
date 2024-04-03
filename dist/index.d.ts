@@ -1,14 +1,4 @@
-import TelegramBot from "node-telegram-bot-api";
-export { TelegramBot };
-export interface TeleBotOptions {
-    token?: string;
-    secret?: string;
-    storageDir?: string;
-    opts?: TelegramBot.ConstructorOptions;
-}
-export declare function getBot(): Promise<TelegramBot>;
-export declare function unsetCommands(commandKeys: string[]): Promise<boolean>;
-export declare function setCommands(commands: TelegramBot.BotCommand[]): Promise<boolean>;
-export declare function setup(options: TeleBotOptions, _errHandler?: (err: Error) => void): void;
-export declare function getOwnerChatId(): Promise<[TelegramBot, string]>;
-export declare const validateEvent: (callback: (message: TelegramBot.Message, metadata: TelegramBot.Metadata) => void) => (message: TelegramBot.Message, metadata: TelegramBot.Metadata) => void;
+import { Scenes } from "telegraf";
+import * as tg from "telegraf/typings/core/types/typegram";
+export declare function middleware(secret: string, storageDir?: string): Promise<import("telegraf").MiddlewareFn<Scenes.SceneContext<Scenes.SceneSessionData>, tg.Update>[]>;
+export declare function getOwnerChatId(): Promise<string>;
