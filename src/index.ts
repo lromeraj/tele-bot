@@ -1,25 +1,15 @@
-import TelegramBot from "node-telegram-bot-api";
 import { LocalStorage } from "node-localstorage";
 import { DEFAULT_STORAGE_DIR } from "./constants";
-
-export {
-  TelegramBot
-}
-
-export interface TeleBotOptions {
-  token?: string;
-  secret?: string;
-  storageDir?: string;
-  opts?: TelegramBot.ConstructorOptions;
-}
+import { message } from 'telegraf/filters';
+import { Telegraf, Scenes, Markup, session, Composer, Telegram, Context } from "telegraf";
+import * as tg from "telegraf/typings/core/types/typegram";
 
 interface GlobalContext {
   secret?: string;
   waitingSecret: boolean;
-  idOwnerChat?: string;
-  bot?: TelegramBot;
+  idOwnerChat?: number;
   storage: LocalStorage; 
-  commands: { [key: string]: TelegramBot.BotCommand };
+  commands: { [key: string]: tg.BotCommand };
 }
 
 const global: GlobalContext = {
@@ -32,146 +22,87 @@ function validSecret( secret: string ) {
   return global.secret && ( global.secret === secret );
 }
 
-function botMessageHandler( bot: TelegramBot, msg: TelegramBot.Message ) {
-  
-  if ( global.waitingSecret ) {
+const ownerScene = new Scenes.BaseScene<Scenes.SceneContext>('owner');
 
-    const idOwnerChat = msg.chat.id;
+ownerScene.enter(async ctx => {
+  await ctx.sendMessage(`Please, provide your authentication secret`);
+});
 
-    if ( validSecret( msg.text || '' ) ) {
-      setOwnerChatId( idOwnerChat );
-      sendOwnerMessage( `Owner OK @ ${ idOwnerChat }` );
-    } else {
-      bot.sendMessage( idOwnerChat, `Owner ERR` );
-    }
+ownerScene.on(message('text'), async (ctx) => {
 
-    global.waitingSecret = false;
+  await ctx.deleteMessage();
 
-    // delete secret from chat history
-    bot.deleteMessage( idOwnerChat, msg.message_id );
-  }
-
-  if ( msg.text === '/owner' ) {
-    if ( global.idOwnerChat ){
-      sendOwnerMessage( `This bot already has an owner` )
-    } else {
-      global.waitingSecret = true;
-      bot.sendMessage( msg.chat.id, `Please send me your secret` )
-    }
-  }
-
-}
-
-function applyCurrentCommands() {
-  if ( global.bot ) {
-    return global.bot.setMyCommands(
-      Object.keys( global.commands )
-        .map( cmdKey => global.commands[ cmdKey ] ) );
+  if ( validSecret( ctx.text ) ) {
+    setOwnerChatId( ctx.message.chat.id );
+    await ctx.reply(`Owner chat saved @ \`${ ctx.message.chat.id }\``, {
+      parse_mode: 'Markdown'
+    });
   } else {
-    return Promise.reject( 'Bot is not defined' )
+    await ctx.reply('Given secret is not valid, please try again');
   }
-}
 
-export function getBot() {
-  return new Promise<TelegramBot>( ( resolve, reject ) => {
-    if ( global.bot ) {
-      resolve( global.bot );
-    } else {
-      reject( new Error( 'Bot is not ready' ) )
-    }
-  })
-}
+  await ctx.scene.leave();
+})
 
-export function unsetCommands( commandKeys: string[] ) {
-  commandKeys.forEach( key => {
-    delete global.commands[ key ];
-  })
-  return applyCurrentCommands();
-}
+const authStage = new Scenes.Stage<Scenes.SceneContext>([
+  ownerScene, 
+], {
+  ttl: 1*30,
+});
 
-export function setCommands( commands:TelegramBot.BotCommand[] ) {
-  commands.forEach( cmd => {
-    global.commands[ cmd.command ] = cmd;
-  })
-  return applyCurrentCommands();
-}
-
-export function setup( 
-  options: TeleBotOptions, 
-  _errHandler?: ( err: Error ) => void 
+export function middleware(
+  secret: string,
+  storageDir?: string,
 ) {
 
-  if ( options.storageDir ) {
-    global.storage = new LocalStorage( options.storageDir );
-  }
+  global.secret = secret;
 
+  if ( storageDir ) {
+    global.storage = new LocalStorage( storageDir );
+  }
+  
   const idOwnerChat = global.storage.getItem('id')
 
   if ( idOwnerChat ) {
-    global.idOwnerChat = idOwnerChat
+    global.idOwnerChat = Number(idOwnerChat)
   }
+
+  return [
+    authStage.middleware(),
+    async (ctx: Scenes.SceneContext, next: () => Promise<void>) => {
+      
+      if (global.idOwnerChat === undefined) {
+        return ctx.scene.enter('owner');
+      } else {
+        if (ctx.message) {
+          if (ctx.message.chat.id === global.idOwnerChat) {
+            return next();
+          } else {
+            ctx.sendMessage(`You are not allowed to use this bot`);
+          } 
+        } else {
+          // This update implies a previous authentication
+          return next();
+        }
+
+      } 
   
-  if ( options.secret && options.token ) {
-    
-    global.secret = options.secret;
-
-    global.bot = new TelegramBot( options.token, {
-      polling: true,
-    });
-    
-    global.bot.on( 'message', 
-      botMessageHandler.bind( null, global.bot ) );
-    
-    const defaultErrHandler = 
-      ( err: Error ) => console.error( err )  
-
-    const errHandler: ( err: Error ) => void = 
-      _errHandler || defaultErrHandler
-
-    global.bot.on( 'error', errHandler );
-    global.bot.on( 'polling_error', errHandler );
-    global.bot.on( 'webhook_error', errHandler );
-
-    setCommands([
-      { 
-        command: 'owner', 
-        description: 'Set bot owner using self assignment' 
-      },
-    ]).catch( errHandler );
-
-  }
+    },
+  ];
 
 }
 
 export function getOwnerChatId() {
-  return new Promise<[ TelegramBot, string ]>( ( resolve, reject ) => {
-    if ( global.bot && global.idOwnerChat ) {
-      resolve([ global.bot, global.idOwnerChat ]);
+  return new Promise<number>((resolve, reject) => {
+    if (global.idOwnerChat) {
+      resolve(global.idOwnerChat);
     } else {
-      reject( new Error( 'Bot does not have an owner' ) );
+      reject(new Error( 'Bot does not have an owner' ));
     }
   })
 }
 
-export const validateEvent = ( 
-  callback: ( message: TelegramBot.Message, metadata: TelegramBot.Metadata ) => void
-) => {
-  return ( message: TelegramBot.Message, metadata: TelegramBot.Metadata ) => {
-    if ( message.chat.id.toString() === global.idOwnerChat ) {
-      callback( message, metadata );
-    }
-  }
-}
-
-function sendOwnerMessage(
-  msg: string, options?: TelegramBot.SendMessageOptions 
-) {
-  if ( global.bot && global.idOwnerChat ) {
-    global.bot.sendMessage( global.idOwnerChat, msg, options );
-  }
-}
-
 function setOwnerChatId( idChat: number ) {
-  global.idOwnerChat = idChat.toString();
-  global.storage.setItem( 'id', global.idOwnerChat );
+  global.idOwnerChat = idChat;
+  global.storage.setItem('id', idChat.toString());
 }
