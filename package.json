@@ -2,6 +2,7 @@
   "name": "tele-bot",
   "version": "0.3.2",
   "description": "Authentication middleware for Telegraf",
+  "description": "Authentication middleware for Telegraf",
   "main": "dist/index.js",
   "scripts": {
     "build": "rimraf build/ && tsc --project tsconfig.json",
